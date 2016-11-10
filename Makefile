@@ -16,10 +16,10 @@
 BIN := myapp
 
 # This repo's root import path (under GOPATH).
-PKG := github.com/thockin/go-build-template
+PKG := github.com/spohnan/go-build-template
 
 # Where to push the docker image.
-REGISTRY ?= thockin
+REGISTRY ?= spohnan
 
 # Which architecture to build - see $(ALL_ARCH) for options.
 ARCH ?= amd64
@@ -82,6 +82,7 @@ bin/$(ARCH)/$(BIN): build-dirs
 	@echo "building: $@"
 	@docker run                                                            \
 	    -ti                                                                \
+	    --rm                                                               \
 	    -u $$(id -u):$$(id -g)                                             \
 	    -v $$(pwd)/.go:/go                                                 \
 	    -v $$(pwd):/go/src/$(PKG)                                          \
@@ -107,6 +108,7 @@ container: .container-$(DOTFILE_IMAGE) container-name
 	    -e 's|ARG_FROM|$(BASEIMAGE)|g' \
 	    Dockerfile.in > .dockerfile-$(ARCH)
 	@docker build -t $(IMAGE):$(VERSION) -f .dockerfile-$(ARCH) .
+	@docker tag $(IMAGE):$(VERSION) $(IMAGE):latest
 	@docker images -q $(IMAGE):$(VERSION) > $@
 
 container-name:
@@ -126,6 +128,7 @@ version:
 test: build-dirs
 	@docker run                                                            \
 	    -ti                                                                \
+	    --rm                                                               \
 	    -u $$(id -u):$$(id -g)                                             \
 	    -v $$(pwd)/.go:/go                                                 \
 	    -v $$(pwd):/go/src/$(PKG)                                          \
